@@ -3,7 +3,7 @@ VB Module to convert INR (Indian Rupee) Currency Digit to Words
 
 How to Use:
 
-Open Excel
+Open Excel <BR>
 Press ALT + F11 to open the VBA editor.
 Insert a new module (Insert > Module).
 Copy and paste the above VBA code into the module.
