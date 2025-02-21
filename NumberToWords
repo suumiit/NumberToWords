@@ -1,0 +1,96 @@
+Function NumberToWords(ByVal MyNumber As Double) As String
+    Dim Units As Variant, Teens As Variant, Tens As Variant, PlaceValue As Variant
+    Dim Word As String, DecimalPart As String, Rupees As String, Paise As String
+    
+    Units = Array("", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine")
+    Teens = Array("Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen")
+    Tens = Array("", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety")
+    PlaceValue = Array("", "Thousand", "Lakh", "Crore")
+    
+    MyNumber = Format(MyNumber, "0.00") ' Ensure two decimal places
+    DecimalPart = Trim(Right(MyNumber, 2)) ' Extract Paise
+    MyNumber = Int(MyNumber) ' Get Rupees part
+    
+    If MyNumber = 0 Then Rupees = "Zero"
+    
+    Dim NumStr As String, Length As Integer, Counter As Integer
+    Dim Parts(3) As String, PartIndex As Integer
+    
+    NumStr = Trim(Str(MyNumber))
+    Length = Len(NumStr)
+    Counter = 0
+    
+    ' Process in Indian number system format
+    While Length > 0
+        If Counter = 0 Then ' First 3 digits (Hundreds)
+            If Length >= 3 Then
+                Parts(PartIndex) = Mid(NumStr, Length - 2, 3)
+                Length = Length - 3
+            Else
+                Parts(PartIndex) = Left(NumStr, Length)
+                Length = 0
+            End If
+        Else ' Next 2 digits (Thousand, Lakh, Crore)
+            If Length >= 2 Then
+                Parts(PartIndex) = Mid(NumStr, Length - 1, 2)
+                Length = Length - 2
+            Else
+                Parts(PartIndex) = Left(NumStr, Length)
+                Length = 0
+            End If
+        End If
+        Counter = Counter + 1
+        PartIndex = PartIndex + 1
+    Wend
+    
+    ' Convert each part into words
+    For i = PartIndex - 1 To 0 Step -1
+        If Val(Parts(i)) > 0 Then
+            Word = Word & ConvertThreeDigits(Parts(i), Units, Teens, Tens) & " " & PlaceValue(i) & " "
+        End If
+    Next i
+    
+    Rupees = Trim(Word) & " Rupees"
+    
+    If Val(DecimalPart) > 0 Then
+        Paise = ConvertTwoDigits(DecimalPart, Units, Teens, Tens) & " Paise"
+    End If
+    
+    NumberToWords = Rupees & IIf(Paise <> "", " and " & Paise, "")
+End Function
+
+Private Function ConvertThreeDigits(ByVal Num As String, Units As Variant, Teens As Variant, Tens As Variant) As String
+    Dim Word As String
+    
+    Num = Right("000" & Num, 3) ' Ensure three digits
+    
+    If Val(Left(Num, 1)) > 0 Then
+        Word = Units(Val(Left(Num, 1))) & " Hundred "
+    End If
+    
+    If Val(Right(Num, 2)) > 0 Then
+        If Val(Right(Num, 2)) < 10 Then
+            Word = Word & Units(Val(Right(Num, 2)))
+        ElseIf Val(Right(Num, 2)) < 20 Then
+            Word = Word & Teens(Val(Right(Num, 2)) - 10)
+        Else
+            Word = Word & Tens(Val(Left(Right(Num, 2), 1))) & " " & Units(Val(Right(Num, 1)))
+        End If
+    End If
+    
+    ConvertThreeDigits = Trim(Word)
+End Function
+
+Private Function ConvertTwoDigits(ByVal Num As String, Units As Variant, Teens As Variant, Tens As Variant) As String
+    Dim Word As String
+    
+    If Val(Num) < 10 Then
+        Word = Units(Val(Num))
+    ElseIf Val(Num) < 20 Then
+        Word = Teens(Val(Num) - 10)
+    Else
+        Word = Tens(Val(Left(Num, 1))) & " " & Units(Val(Right(Num, 1)))
+    End If
+    
+    ConvertTwoDigits = Trim(Word)
+End Function
